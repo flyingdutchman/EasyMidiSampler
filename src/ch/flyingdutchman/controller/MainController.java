@@ -7,6 +7,7 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.File;
 
 /**
  * Controller part of the MVC
@@ -30,6 +31,8 @@ public class MainController implements ActionListener, ItemListener{
         this.mainView = mainView;
         this.state = state;
 
+        state.addObserver(mainView);
+
         //Set the MIDI Device
         promptMidiDeviceSelection();
 
@@ -46,9 +49,14 @@ public class MainController implements ActionListener, ItemListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         switch(e.getActionCommand()) {
-            case MainView.ACTION_EXIT : exit();
+            case MainView.ACTION_EXIT :
+                exit();
                 break;
-            case MainView.ACTION_UPDATE_MIDI_DEVICE : promptMidiDeviceSelection();
+            case MainView.ACTION_UPDATE_MIDI_DEVICE :
+                promptMidiDeviceSelection();
+                break;
+            case MainView.ACTION_NEW_MAPPING :
+                newMapping();
         }
     }
 
@@ -94,5 +102,10 @@ public class MainController implements ActionListener, ItemListener{
             );
         }
         state.setMidiDevice(midiDevice);
+    }
+
+    private void newMapping() {
+        MidiMap midiMap = new MidiMap(null, 28);
+        state.addMapping(midiMap);
     }
 }

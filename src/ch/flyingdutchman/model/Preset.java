@@ -1,16 +1,20 @@
 package ch.flyingdutchman.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.util.Vector;
 
 /**
  * Represents a preset of the program. It contains the list of
  * mappings between song and MIDI.
  */
 public class Preset {
-    List<MidiMap> mapping;
+    private Vector<MidiMap> mapping;
 
     public Preset() {
-        mapping = new ArrayList<>();
+        mapping = new Vector<>();
+    }
+
+    public Vector<MidiMap> getMapping() {
+        return mapping;
     }
 }

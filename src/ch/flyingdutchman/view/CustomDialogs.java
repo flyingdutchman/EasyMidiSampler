@@ -1,9 +1,12 @@
 package ch.flyingdutchman.view;
 
+import ch.flyingdutchman.model.MidiMap;
+
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.*;
+import java.io.File;
 
 /**
  * This class stores the custom dialogs needed throughout the program
@@ -36,5 +39,9 @@ public class CustomDialogs {
         }
 
         return midiDevice;
+    }
+
+    public MidiMap showMidiMapEditor() {
+        return null;
     }
 }

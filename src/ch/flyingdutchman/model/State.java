@@ -1,12 +1,17 @@
 package ch.flyingdutchman.model;
 
 import javax.sound.midi.MidiDevice;
+import java.util.Observable;
+import java.util.Vector;
 
 /**
  * This class represent the current state of the program.
  * It tracks whether it has been recently modified.
  */
-public class State {
+public class State extends Observable {
+
+    public static final int UPDATE_MAPPING_LIST = 0;
+
     private Preset currentPreset;
     private MidiDevice midiDevice;
     private boolean unSaved;
@@ -19,6 +24,17 @@ public class State {
     public State(Preset preset) {
         currentPreset = preset;
         unSaved = false;
+    }
+
+    public Vector<MidiMap> getMapping() {
+        return currentPreset.getMapping();
+    }
+
+    public void addMapping(MidiMap midiMap) {
+        currentPreset.getMapping().add(midiMap);
+        unSaved = true;
+        setChanged();
+        notifyObservers(UPDATE_MAPPING_LIST);
     }
 
     /**
