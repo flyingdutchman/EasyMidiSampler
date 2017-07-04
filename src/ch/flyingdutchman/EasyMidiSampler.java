@@ -1,6 +1,5 @@
 package ch.flyingdutchman;
 
-import ch.flyingdutchman.controller.MainController;
 import ch.flyingdutchman.model.Preset;
 import ch.flyingdutchman.model.State;
 import ch.flyingdutchman.view.MainView;
@@ -20,7 +19,8 @@ public class EasyMidiSampler {
 
         Preset newPreset = new Preset();
         State state = new State(newPreset);
-        MainController mainController = new MainController(new MainView(state), state);
+        MainView mainView = new MainView(state);
+        state.addObserver(mainView);
 
         // MIDI INTERACTION TEST
         /*

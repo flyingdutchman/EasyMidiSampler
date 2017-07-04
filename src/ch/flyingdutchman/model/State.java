@@ -1,5 +1,8 @@
 package ch.flyingdutchman.model;
 
+import ch.flyingdutchman.view.MainView;
+import sun.applet.Main;
+
 import javax.sound.midi.MidiDevice;
 import java.util.Observable;
 import java.util.Vector;
@@ -22,7 +25,7 @@ public class State extends Observable {
      * @param preset the preset loaded into the state
      */
     public State(Preset preset) {
-        currentPreset = preset;
+        this.currentPreset = preset;
         unSaved = false;
     }
 
@@ -37,6 +40,13 @@ public class State extends Observable {
         notifyObservers(UPDATE_MAPPING_LIST);
     }
 
+    public void setMapping(int index, MidiMap midiMap) {
+        currentPreset.getMapping().set(index, midiMap);
+        unSaved = true;
+        setChanged();
+        notifyObservers(UPDATE_MAPPING_LIST);
+    }
+
     /**
      * Set the currently used MIDI device.
      *
@@ -44,6 +54,10 @@ public class State extends Observable {
      */
     public void setMidiDevice(MidiDevice midiDevice) {
         this.midiDevice = midiDevice;
+    }
+
+    public MidiDevice getMidiDevice() {
+        return midiDevice;
     }
 
     /**

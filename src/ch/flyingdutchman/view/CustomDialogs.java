@@ -41,7 +41,8 @@ public class CustomDialogs {
         return midiDevice;
     }
 
-    public MidiMap showMidiMapEditor() {
+    public static MidiMap showMidiMapEditor(MidiMap midiMap) {
+        //MidiMap newMidiMap = new MidiMap()
         return null;
     }
 }
