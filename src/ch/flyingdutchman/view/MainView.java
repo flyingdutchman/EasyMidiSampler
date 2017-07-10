@@ -1,10 +1,10 @@
 package ch.flyingdutchman.view;
 
+import ch.flyingdutchman.model.CustomReceiver;
 import ch.flyingdutchman.model.MidiMap;
 import ch.flyingdutchman.model.State;
 
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -22,9 +22,9 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
     public static final String ACTION_EDIT_MAPPING = "Edit Mapping";
 
     private State state;
-    JMenuBar menuBar;
-    JMenuItem editMappingItem;
-    JList<MidiMap> mappings;
+    private JMenuBar menuBar;
+    private JMenuItem editMappingItem;
+    private JList<MidiMap> mappings;
 
     /**
      * Constructs a new MainView
@@ -199,6 +199,26 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
                     JOptionPane.ERROR_MESSAGE
             );
         }
+        if(midiDevice != null) {
+            initializeMidiDevice(midiDevice);
+        }
         state.setMidiDevice(midiDevice);
+    }
+
+    private void initializeMidiDevice(MidiDevice midiDevice) {
+        System.out.println("Midi Device Initialization");
+        try {
+            midiDevice.open();
+            Transmitter transmitter = midiDevice.getTransmitter();
+            Receiver receiver = new CustomReceiver();
+            transmitter.setReceiver(receiver);
+
+        } catch (MidiUnavailableException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Error while loading MIDI device. Make sure it is not used by any other application",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 }

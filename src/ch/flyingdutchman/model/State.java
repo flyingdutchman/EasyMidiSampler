@@ -1,8 +1,5 @@
 package ch.flyingdutchman.model;
 
-import ch.flyingdutchman.view.MainView;
-import sun.applet.Main;
-
 import javax.sound.midi.MidiDevice;
 import java.util.Observable;
 import java.util.Vector;
