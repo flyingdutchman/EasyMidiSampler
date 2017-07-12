@@ -1,5 +1,6 @@
 package ch.flyingdutchman.view;
 
+import ch.flyingdutchman.EasyMidiSampler;
 import ch.flyingdutchman.model.MidiMap;
 
 import javax.sound.sampled.AudioFileFormat;
@@ -9,6 +10,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.util.prefs.Preferences;
 
 public class MapEditPanel extends JPanel {
 
@@ -53,14 +55,20 @@ public class MapEditPanel extends JPanel {
 
         JButton browse = new JButton("Browse");
         browse.addActionListener(e -> {
+
+            Preferences prefs = Preferences.userRoot();
+
+            String path = prefs.get("DEFAULT_PATH","");
             JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(path));
             fileChooser.setAcceptAllFileFilterUsed(false);
             FileFilter audioFilter = new FileNameExtensionFilter("Supported Audio files (.wav, .aiff)", "wav", "aiff");
             fileChooser.resetChoosableFileFilters();
             fileChooser.addChoosableFileFilter(audioFilter);
             int returnValue = fileChooser.showOpenDialog(null);
             if(returnValue == JFileChooser.APPROVE_OPTION) {
-               pathTextField.setText(fileChooser.getSelectedFile().toString());
+               pathTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+               prefs.put("DEFAULT_PATH", fileChooser.getSelectedFile().getAbsolutePath());
             }
         });
         browse.setMargin(new Insets(0,0,0,0));

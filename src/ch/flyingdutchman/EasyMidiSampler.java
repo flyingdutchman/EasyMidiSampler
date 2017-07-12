@@ -5,6 +5,7 @@ import ch.flyingdutchman.model.State;
 import ch.flyingdutchman.view.MainView;
 
 import java.util.Locale;
+import java.util.prefs.Preferences;
 
 /**
  * Main class that launches the hole program
