@@ -44,6 +44,13 @@ public class State extends Observable {
         notifyObservers(UPDATE_MAPPING_LIST);
     }
 
+    public void deleteMapping(int index) {
+        currentPreset.getMapping().remove(index);
+        unSaved = true;
+        setChanged();
+        notifyObservers(UPDATE_MAPPING_LIST);
+    }
+
     /**
      * Set the currently used MIDI device.
      *
@@ -53,6 +60,11 @@ public class State extends Observable {
         this.midiDevice = midiDevice;
     }
 
+    /**
+     * Returns the currently used MIDI device.
+     *
+     * @return Current MIDI device, may be null
+     */
     public MidiDevice getMidiDevice() {
         return midiDevice;
     }

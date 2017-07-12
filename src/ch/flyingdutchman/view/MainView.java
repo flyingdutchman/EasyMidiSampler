@@ -5,9 +5,13 @@ import ch.flyingdutchman.model.MidiMap;
 import ch.flyingdutchman.model.State;
 
 import javax.sound.midi.*;
+import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -16,19 +20,21 @@ import java.util.*;
  */
 public class MainView extends JFrame implements Observer, ActionListener, ItemListener{
 
-    public static final String ACTION_EXIT = "Exit";
-    public static final String ACTION_UPDATE_MIDI_DEVICE = "Select Midi Device";
-    public static final String ACTION_NEW_MAPPING = "New Mapping";
-    public static final String ACTION_EDIT_MAPPING = "Edit Mapping";
+    private static final String ACTION_EXIT = "Exit";
+    private static final String ACTION_UPDATE_MIDI_DEVICE = "Select Midi Device";
+    private static final String ACTION_NEW_MAPPING = "New Mapping";
+    private static final String ACTION_EDIT_MAPPING = "Edit Mapping";
+    private static final String ACTION_DELETE_MAPPING = "Delete Mapping";
 
     private State state;
     private JMenuBar menuBar;
     private JMenuItem editMappingItem;
-    private JList<MidiMap> mappings;
+    private JMenuItem deleteMappingItem;
+    private JTable mappings;
+    private String[] columnNames = {"Name","Key Number","Audio file", "Behaviour", "Activated"};
 
     /**
      * Constructs a new MainView
-     * Must be initialized by MainController to be usable
      *
      * @param state the state parameter
      */
@@ -52,11 +58,17 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
 
 
         //Initialization of center panel
-        mappings = new JList<>();
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        model.setColumnIdentifiers(columnNames);
+        mappings = new JTable(model);
         mappings.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        mappings.setLayoutOrientation(JList.VERTICAL);
-        mappings.setListData(state.getMapping());
-        mappings.setSelectedIndex(0);
+        mappings.setShowGrid(false);
+        mappings.setDragEnabled(false);
         JScrollPane scrollPane = new JScrollPane(mappings);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -106,6 +118,11 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
         editMappingItem = new JMenuItem(ACTION_EDIT_MAPPING);
         editMappingItem.addActionListener(this);
         editMenu.add(editMappingItem);
+
+        //Delete Mapping
+        deleteMappingItem = new JMenuItem(ACTION_DELETE_MAPPING);
+        deleteMappingItem.addActionListener(this);
+        editMenu.add(deleteMappingItem);
     }
 
     private void createMidiMenu() {
@@ -133,28 +150,25 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
     }
 
     private void updateMappingList() {
+
+        //TODO au lieu de changer les boutons ici, faire un action listener qui détecte une sélection
         if(state.getMapping().isEmpty()) {
             editMappingItem.setEnabled(false);
+            deleteMappingItem.setEnabled(false);
         } else {
             editMappingItem.setEnabled(true);
-            mappings.setListData(state.getMapping());
+            deleteMappingItem.setEnabled(true);
         }
-    }
 
-    private void exit() {
-        if(state.isUnSaved()) {
-            int n = JOptionPane.showConfirmDialog(
-                    null,
-                    "Warning! You have some unsaved changes.\n"
-                            + "Are you sure you want to leave ?",
-                    "Warning",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-            //If the answer was "No"
-            if(n == 1) {return;}
+        Vector<MidiMap> maps = state.getMapping();
+        Object[][] data = new Object[maps.size()][columnNames.length];
+        for(int i = 0; i < data.length; i++) {
+            MidiMap midiMap = maps.elementAt(i);
+            Object[] newLine = {midiMap.getName(), midiMap.getKeyNumber(), midiMap.getPath()};
+            data[i] = newLine;
         }
-        System.exit(0);
+        DefaultTableModel model = (DefaultTableModel) mappings.getModel();
+        model.setDataVector(data, columnNames);
     }
 
     @Override
@@ -172,6 +186,9 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
             case MainView.ACTION_EDIT_MAPPING :
                 editMapping();
                 break;
+            case MainView.ACTION_DELETE_MAPPING :
+                deleteMapping();
+                break;
         }
     }
 
@@ -180,12 +197,29 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
 
     }
 
-    private void editMapping() {
-
+    private void newMapping() {
+        MidiMap newMap = CustomDialogs.showMapEditDialog();
+        state.addMapping(newMap);
     }
 
-    private void newMapping() {
-        state.addMapping(new MidiMap(null,42));
+    private void editMapping() {
+        //Extract selected mapping
+        int selectedRow = mappings.getSelectedRow();
+        if(selectedRow == -1) {
+            return;
+        }
+        MidiMap midiMap = state.getMapping().elementAt(selectedRow);
+        MidiMap newMap = CustomDialogs.showMapEditDialog(midiMap);
+        state.setMapping(selectedRow, newMap);
+    }
+
+    private void deleteMapping() {
+        //Extract selected mapping
+        int selectedRow = mappings.getSelectedRow();
+        if(selectedRow == -1) {
+            return;
+        }
+        state.deleteMapping(selectedRow);
     }
 
     private void promptMidiDeviceSelection() {
@@ -210,7 +244,7 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
         try {
             midiDevice.open();
             Transmitter transmitter = midiDevice.getTransmitter();
-            Receiver receiver = new CustomReceiver();
+            Receiver receiver = new CustomReceiver(state.getMapping());
             transmitter.setReceiver(receiver);
 
         } catch (MidiUnavailableException e) {
@@ -220,5 +254,26 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
                     JOptionPane.ERROR_MESSAGE
             );
         }
+    }
+
+    private void exit() {
+        if(state.isUnSaved()) {
+            int n = JOptionPane.showConfirmDialog(
+                    null,
+                    "Warning! You have some unsaved changes.\n"
+                            + "Are you sure you want to leave ?",
+                    "Warning",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            //If the answer was "No"
+            if(n == 1) {return;}
+        }
+
+        if(state.getMidiDevice() != null) {
+            state.getMidiDevice().close(); //All Receiver and Transmitter instances open from this device are closed.
+        }
+        state.getMapping().forEach((midiMap) -> midiMap.getClip().close());
+        System.exit(0);
     }
 }

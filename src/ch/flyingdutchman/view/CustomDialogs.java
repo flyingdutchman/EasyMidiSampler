@@ -6,7 +6,7 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.*;
-import java.io.File;
+import java.awt.*;
 
 /**
  * This class stores the custom dialogs needed throughout the program
@@ -41,8 +41,32 @@ public class CustomDialogs {
         return midiDevice;
     }
 
-    public static MidiMap showMidiMapEditor(MidiMap midiMap) {
-        //MidiMap newMidiMap = new MidiMap()
-        return null;
+    /**
+     *
+     * @return new map or null if nothing changed
+     */
+    public static MidiMap showMapEditDialog() {
+
+        MidiMap result;
+        MapEditPanel editView = new MapEditPanel();
+        int input = JOptionPane.showConfirmDialog(null, editView, "Edit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        result = (input == JOptionPane.OK_OPTION) ? editView.getInput() : null;
+
+        return result;
+    }
+
+    /**
+     *
+     * @param midiMap
+     * @return new map or null if nothing changed
+     */
+    public static MidiMap showMapEditDialog(MidiMap midiMap) {
+
+        MidiMap result;
+        MapEditPanel editView = new MapEditPanel(midiMap);
+        int input = JOptionPane.showConfirmDialog(null, editView, "Edit", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        result = (input == JOptionPane.OK_OPTION) ? editView.getInput() : midiMap;
+
+        return result;
     }
 }

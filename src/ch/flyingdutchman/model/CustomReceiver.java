@@ -2,67 +2,96 @@ package ch.flyingdutchman.model;
 
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Receiver;
+import javax.sound.midi.ShortMessage;
+import javax.sound.sampled.Clip;
+import java.util.Vector;
 
 /**
- * Voice Message           Status Byte      Data Byte1          Data Byte2
- * -------------           -----------   -----------------   -----------------
- * Note off                      8x      Key number          Note Off velocity
- * Note on                       9x      Key number          Note on velocity
- * Polyphonic Key Pressure       Ax      Key number          Amount of pressure
- * Control Change                Bx      Controller number   Controller value
- * Program Change                Cx      Program number      None
- * Channel Pressure              Dx      Pressure value      None
- * Pitch Bend                    Ex      MSB                 LSB
  *
- * Notes: `x' in status byte hex value stands for a channel number.
  */
 public class CustomReceiver implements Receiver {
+
+    Vector<MidiMap> maps;
+
+    public CustomReceiver(Vector<MidiMap> maps) {
+        super();
+        if(maps == null) {
+            throw new IllegalArgumentException();
+        }
+        this.maps = maps;
+    }
+
     @Override
-    public void send(MidiMessage message, long timeStamp) {
-        printMidiMessage(message);
+    public void send(MidiMessage midiMessage, long timeStamp) {
+
+        printMidiMessage(midiMessage);
+
+        byte[] message = midiMessage.getMessage();
+        int status = midiMessage.getStatus() & 0xFF;
+        int type = status & 0xF0;
+
+        if(type == ShortMessage.NOTE_ON) {
+            for(MidiMap m : maps) {
+                if(message[1] == m.getKeyNumber()) {
+                    Clip clip = m.getClip();
+                    clip.setMicrosecondPosition(0);
+                    System.out.println(clip.getMicrosecondPosition()+" / "+clip.getMicrosecondLength());
+                    clip.start();
+                    System.out.println("Horn");
+                }
+            }
+        }
     }
 
     @Override
     public void close() {
-        System.out.println("Receiver closed");
+        System.out.println("CustomReceiver closed");
     }
 
+    /**
+     * Prints in the console in a readable way the midi message given in parameter
+     *
+     * @param midiMessage the printed message
+     */
     private void printMidiMessage(MidiMessage midiMessage) {
+        if(midiMessage == null) {
+            throw new IllegalArgumentException();
+        }
         byte[] message = midiMessage.getMessage();
-        int status = (int) (midiMessage.getStatus() & 0xFF);
-        int type = (status & 0xF0) >> 4;
+        int status = midiMessage.getStatus() & 0xFF;
+        int type = status & 0xF0;
         int channel = status & 0xF;
 
         switch (type) {
-            case 0x8 : System.out.println("Note off,"
+            case ShortMessage.NOTE_OFF : System.out.println("Note off,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Key Number : "+message[1]
                     +" Velocity : "+message[2]);
             break;
-            case 0x9 : System.out.println("Note on,"
+            case ShortMessage.NOTE_ON : System.out.println("Note on,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Key Number : "+message[1]
                     +" Velocity : "+message[2]);
             break;
-            case 0xA : System.out.println("Polyphonic Key Pressure,"
+            case ShortMessage.POLY_PRESSURE : System.out.println("Polyphonic Key Pressure,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Key Number : "+message[1]
                     +" Amount of pressure : "+message[2]);
             break;
-            case 0xB : System.out.println("Control Change,"
+            case ShortMessage.CONTROL_CHANGE : System.out.println("Control Change,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Controller number : "+message[1]
                     +" Controller value : "+message[2]);
             break;
-            case 0xC : System.out.println("Program Change,"
+            case ShortMessage.PROGRAM_CHANGE : System.out.println("Program Change,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Program number : "+message[1]);
             break;
-            case 0xD : System.out.println("Channel Pressure,"
+            case ShortMessage.CHANNEL_PRESSURE : System.out.println("Channel Pressure,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" Pitch Bend : "+message[1]);
             break;
-            case 0xE : System.out.println("Pitch Bend,"
+            case ShortMessage.PITCH_BEND : System.out.println("Pitch Bend,"
                     +" Channel : " + Integer.toHexString(channel)
                     +" MSB : "+message[1]
                     +" LSB : "+message[2]);
