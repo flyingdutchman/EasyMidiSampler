@@ -35,9 +35,7 @@ public class CustomReceiver implements Receiver {
                 if(message[1] == m.getKeyNumber()) {
                     Clip clip = m.getClip();
                     clip.setMicrosecondPosition(0);
-                    System.out.println(clip.getMicrosecondPosition()+" / "+clip.getMicrosecondLength());
                     clip.start();
-                    System.out.println("Horn");
                 }
             }
         }

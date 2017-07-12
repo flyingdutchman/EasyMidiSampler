@@ -199,7 +199,9 @@ public class MainView extends JFrame implements Observer, ActionListener, ItemLi
 
     private void newMapping() {
         MidiMap newMap = CustomDialogs.showMapEditDialog();
-        state.addMapping(newMap);
+        if(newMap != null) {
+            state.addMapping(newMap);
+        }
     }
 
     private void editMapping() {

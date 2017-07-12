@@ -2,12 +2,16 @@ package ch.flyingdutchman.view;
 
 import ch.flyingdutchman.model.MidiMap;
 
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioSystem;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
 
 public class MapEditPanel extends JPanel {
 
-    private MidiMap editedMidiMap;
     private JTextField nameTextField;
     private JTextField pathTextField;
     private JSpinner midiSpinner;
@@ -48,6 +52,17 @@ public class MapEditPanel extends JPanel {
         add(pathTextField, c);
 
         JButton browse = new JButton("Browse");
+        browse.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            FileFilter audioFilter = new FileNameExtensionFilter("Supported Audio files (.wav, .aiff)", "wav", "aiff");
+            fileChooser.resetChoosableFileFilters();
+            fileChooser.addChoosableFileFilter(audioFilter);
+            int returnValue = fileChooser.showOpenDialog(null);
+            if(returnValue == JFileChooser.APPROVE_OPTION) {
+               pathTextField.setText(fileChooser.getSelectedFile().toString());
+            }
+        });
         browse.setMargin(new Insets(0,0,0,0));
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 2;
@@ -73,13 +88,16 @@ public class MapEditPanel extends JPanel {
 
     public MapEditPanel(MidiMap midiMap) {
         this();
-        editedMidiMap = midiMap;
         nameTextField.setText(midiMap.getName());
         pathTextField.setText(midiMap.getPath());
         midiSpinner.setValue(midiMap.getKeyNumber());
-
     }
 
+    /**
+     * Returns a new MidiMap based on the user input retrieved in the edited Panel
+     *
+     * @return a new MidiMap
+     */
     public MidiMap getInput() {
         return new MidiMap(nameTextField.getText(), pathTextField.getText(), (int)midiSpinner.getValue());
     }
