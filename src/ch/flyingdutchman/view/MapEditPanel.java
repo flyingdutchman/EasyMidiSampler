@@ -1,10 +1,7 @@
 package ch.flyingdutchman.view;
 
-import ch.flyingdutchman.EasyMidiSampler;
 import ch.flyingdutchman.model.MidiMap;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioSystem;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -17,6 +14,7 @@ public class MapEditPanel extends JPanel {
     private JTextField nameTextField;
     private JTextField pathTextField;
     private JSpinner midiSpinner;
+    private JCheckBox typeCheckBox;
     private final int TEXT_FIELD_WIDTH = 20;
 
     public MapEditPanel() {
@@ -91,6 +89,13 @@ public class MapEditPanel extends JPanel {
         c.gridy = 2;
         add(midiSpinner,c);
 
+        typeCheckBox = new JCheckBox("Push to stop");
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 2;
+        c.gridy = 2;
+        add(typeCheckBox,c);
+
         setVisible(true);
     }
 
@@ -107,7 +112,7 @@ public class MapEditPanel extends JPanel {
      * @return a new MidiMap
      */
     public MidiMap getInput() {
-        return new MidiMap(nameTextField.getText(), pathTextField.getText(), (int)midiSpinner.getValue());
+        return new MidiMap(nameTextField.getText(), pathTextField.getText(), (int)midiSpinner.getValue(), typeCheckBox.isSelected());
     }
 
 }

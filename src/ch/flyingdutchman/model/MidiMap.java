@@ -10,10 +10,11 @@ import java.io.IOException;
  */
 public class MidiMap {
 
-    String name;
-    String path;
-    Clip clip;
-    int keyNumber;
+    private String name;
+    private String path;
+    private Clip clip;
+    private int keyNumber;
+    private boolean pushToStop;
 
     /**
      * Constructs a new MidiMap that will associate a clip and a name to a key number
@@ -22,7 +23,7 @@ public class MidiMap {
      * @param path the path of the audio clip to map
      * @param keyNumber the MIDI key number you want to bind [0-128]
      */
-    public MidiMap(String name, String path, int keyNumber) {
+    public MidiMap(String name, String path, int keyNumber, boolean pushToStop) {
         if(name == null || path == null || keyNumber < 0 || keyNumber > 128) {
             throw new IllegalArgumentException();
         }
@@ -57,6 +58,15 @@ public class MidiMap {
         this.path = path;
         this.clip = clip;
         this.keyNumber = keyNumber;
+        this.pushToStop = pushToStop;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public boolean isPushToStop() {
+        return pushToStop;
     }
 
     /**

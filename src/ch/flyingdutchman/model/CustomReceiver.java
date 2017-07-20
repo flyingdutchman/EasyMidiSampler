@@ -4,6 +4,8 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
 import java.util.Vector;
 
 /**
@@ -12,6 +14,7 @@ import java.util.Vector;
 public class CustomReceiver implements Receiver {
 
     Vector<MidiMap> maps;
+    boolean isPlaying;
 
     public CustomReceiver(Vector<MidiMap> maps) {
         super();
@@ -19,6 +22,7 @@ public class CustomReceiver implements Receiver {
             throw new IllegalArgumentException();
         }
         this.maps = maps;
+        isPlaying = false;
     }
 
     @Override
@@ -34,8 +38,27 @@ public class CustomReceiver implements Receiver {
             for(MidiMap m : maps) {
                 if(message[1] == m.getKeyNumber()) {
                     Clip clip = m.getClip();
-                    clip.setMicrosecondPosition(0);
-                    clip.start();
+                    clip.addLineListener(event -> {
+                        //If reaches the end of file, rewinds it
+                        if(event.getType() == LineEvent.Type.STOP) {
+                            clip.setMicrosecondPosition(0);
+                            isPlaying = false;
+                        }
+
+                        if(event.getType() == LineEvent.Type.START) {
+                            isPlaying = true;
+                        }
+                    });
+                    if(m.isPushToStop()) {
+                        if(!isPlaying) {
+                            clip.start();
+                        } else {
+                            clip.stop();
+                        }
+                    } else {
+                        clip.setMicrosecondPosition(0);
+                        clip.start();
+                    }
                 }
             }
         }
